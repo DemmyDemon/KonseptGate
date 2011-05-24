@@ -1,0 +1,12 @@
+name: KonseptGate
+main: com.webkonsept.bukkit.konseptgate.KG
+version: 0.1
+author: Fredrik Vold
+database: false
+description: >
+        Simplified/stripped-down teleport/gating plugin
+commands:
+    kg:
+        aliases: 
+        description: Takes the selected action against the indicated gate(s)
+        usage: /<command> [action] <gate names>
