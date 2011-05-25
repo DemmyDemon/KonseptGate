@@ -1,4 +1,4 @@
-<project name="RepairChest" default="buildJar">
+<project name="KonseptGate" default="buildJar">
 	<path id="class.path">
 		<fileset dir="./libs/" includes="*.jar" />
   	</path>

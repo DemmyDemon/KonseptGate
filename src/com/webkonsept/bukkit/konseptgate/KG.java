@@ -2,6 +2,8 @@ package com.webkonsept.bukkit.konseptgate;
 
 import java.util.logging.Logger;
 
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
@@ -38,6 +40,42 @@ public class KG extends JavaPlugin {
 		}
 		pm.registerEvent(Event.Type.PLAYER_MOVE,playerListener,Priority.Normal,this);
 	}
+	
+	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
+		boolean validCommand = false;
+		Player player;
+		if (!(sender instanceof Player)){
+			sender.sendMessage("Sorry, mr. Console, but you have to be in-game to do this because of all the coordinates and stuff derived from player location.");
+			return true;
+		}
+		else {
+			player = (Player) sender;
+			if (args.length == 0){
+				return false;
+			}
+			else if (args[0].equalsIgnoreCase("create")){
+				validCommand = true;
+				float yaw = player.getLocation().getYaw() % 360;
+				player.sendMessage("Exact yaw: "+yaw);
+				int cardinalYaw = -1;
+				if (yaw >= 315 || yaw <= 45){
+					cardinalYaw = 0;
+				}
+				else if (yaw > 45 && yaw < 135){
+					cardinalYaw = 90;
+				}
+				else if (yaw >= 135 && yaw <= 225){
+					cardinalYaw = 180;
+				}
+				else if (yaw > 225 && yaw < 315){
+					cardinalYaw = 270;
+				}
+				player.sendMessage("Cadrinal yaw: "+cardinalYaw);
+			}
+		}
+		return validCommand;
+	}
+	
 	public boolean permit(Player player,String permission){
 		if (player == null) {
 			this.crap("NULL player passed to permission check!");
