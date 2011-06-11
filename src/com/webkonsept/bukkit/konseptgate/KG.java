@@ -55,7 +55,7 @@ public class KG extends JavaPlugin {
 			}
 			else if (args[0].equalsIgnoreCase("create")){
 				validCommand = true;
-				float yaw = player.getLocation().getYaw() % 360;
+				float yaw = Math.abs(player.getLocation().getYaw() % 360);
 				player.sendMessage("Exact yaw: "+yaw);
 				int cardinalYaw = -1;
 				if (yaw >= 315 || yaw <= 45){
