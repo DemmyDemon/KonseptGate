@@ -3,8 +3,7 @@ main: com.webkonsept.bukkit.konseptgate.KG
 version: 0.1
 author: Fredrik Vold
 database: false
-description: >
-        Simplified/stripped-down teleport/gating plugin
+description: Simplified/stripped-down teleport/gating plugin
 commands:
     kg:
         aliases: 
