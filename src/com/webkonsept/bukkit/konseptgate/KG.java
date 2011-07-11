@@ -86,12 +86,12 @@ public class KG extends JavaPlugin {
 				}
 				String gateName = args[1];
 				validCommand = true;
-				if (permit(player,"konseptgate.command.")){
+				if (permit(player,"konseptgate.command.create")){
 					if (gates.gateName.containsKey(gateName)){
 						sender.sendMessage("A gate named '"+gateName+"' already exists.  Did you mean /kg move "+gateName+"?");
 						return true;
 					}
-	
+					getServer().getScheduler().scheduleAsyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),10);
 					Location newLocation = player.getLocation().clone();
 					
 					if (args.length == 2){

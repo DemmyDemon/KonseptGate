@@ -65,6 +65,7 @@ public class KGPlayerListener extends PlayerListener {
 					else {
 						player.sendMessage("This gate is called "+gate.getName()+", it is not linked and goes nowhere.");
 					}
+					event.setCancelled(true);
 				}
 			}
 		}

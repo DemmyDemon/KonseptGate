@@ -1,7 +1,6 @@
 package com.webkonsept.bukkit.konseptgate;
 
 import java.text.ParseException;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -103,12 +102,13 @@ public class KGate {
 		return forTP;
 	}
 	public BlockFace faceFromYaw(int yaw){
-		switch (cardinalYaw(yaw)){
-			case 	0: 		return BlockFace.WEST;
-			case 	90: 	return BlockFace.NORTH;
+		int cYaw = cardinalYaw(yaw);
+		switch (cYaw){
+			case 	0: 		return BlockFace.WEST; 
+			case 	90: 	return BlockFace.NORTH; 
 			case 	180: 	return BlockFace.EAST; 
-			case 	270: 	return BlockFace.SOUTH;
-			default : 		return BlockFace.SOUTH;
+			case 	270: 	return BlockFace.SOUTH; 
+			default : 		return BlockFace.SOUTH; 
 		}
 	}
 	public void setTargetName(String targetName) {
@@ -129,7 +129,7 @@ public class KGate {
 	}
 	private static int cardinalYaw (float yaw){
 		int cardinalYaw = -1;
-		yaw = Math.abs(yaw % 360);
+		yaw = (yaw % 360 + 360) % 360;
 		if (yaw >= 315 || yaw <= 45){
 			cardinalYaw = 0;
 		}
