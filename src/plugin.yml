@@ -1,7 +1,10 @@
 name: KonseptGate
 main: com.webkonsept.bukkit.konseptgate.KG
-version: 0.1
-author: Fredrik Vold
+version: 0.2
+branch: stable
+website: http://minecraft.webkonsept.com/plugins/details/KonseptGate.html
+location: http://minecraft.webkonsept.com/plugins/download/KonseptGate.jar
+thread: http://forums.bukkit.org/threads/KonseptGate.25907/
 database: false
 description: Simplified/stripped-down teleport/gating plugin
 commands:
@@ -9,3 +12,14 @@ commands:
         aliases: 
         description: Takes the selected action against the indicated gate(s)
         usage: /<command> [action] <gate names>
+generators: [bukget]
+categories: [TP]
+maintainer: DemmyDemon
+authors: [DemmyDemon]
+conflicts: []
+required: [Permissions]
+optional: []
+engines:
+    craftbukkit:
+        min: 935
+        max: 953

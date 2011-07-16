@@ -9,7 +9,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
 public class KGate {
+	private KG plugin;
 	private String name;
+	private String deferredLocation;
 	private String targetName;
 	private Location location;
 	private int yaw;
@@ -17,7 +19,8 @@ public class KGate {
 	private String split = ",";
 	private int expectedNumberOfFields = 7;
 	
-	KGate (String gateString) throws ParseException {
+	KGate (KG instance,String gateString) throws ParseException {
+		this.plugin = instance;
 		if (gateString == null){
 			throw new ParseException("gateString is null.  Very bad.",0);
 		}
@@ -42,28 +45,39 @@ public class KGate {
 			this.name = name;
 			this.targetName = target;
 			World world = Bukkit.getServer().getWorld(worldName);
-			this.location = new Location(world,x,y,z);
 			this.yaw = yaw;
-			this.location = KGate.saneLocation(this.location);
+			if (world != null){
+				this.location = KGate.saneLocation(new Location(world,x,y,z));
+			}
+			else {
+				plugin.babble("World '"+worldName+"' is not loaded yet:  Deferring location resolution for KonseptGate "+name);
+				deferredLocation = worldName+split+x+split+y+split+z;
+				plugin.gates.gateWorldNotLoaded++;
+			}
+			
 		}
 		catch (NumberFormatException e){
 			throw new ParseException("Invalid integer found in gateString "+gateString,0);
 		}
 	}
-	KGate (String name, Location location, String targetName){
+	KGate (KG instance,String name, Location location, String targetName){
+		this.plugin = instance;
 		this.name = name.replace(split,"");
 		this.targetName = targetName.replace(split,"");
 		this.yaw = cardinalYaw(location.getYaw());
 		this.location = saneLocation(location);
 	}
-	KGate (String name, Location location){
+	KGate (KG instance,String name, Location location){
+		this.plugin = instance;
 		this.name = name.replace(split,"");
 		this.yaw = cardinalYaw(location.getYaw());
 		this.location = saneLocation(location);
 		this.targetName = "";
 	}
 	public void createBlock(Material underblock){
-		Block block = location.getBlock();
+		Location blockLocation = getLocation();
+		if (blockLocation == null) return;
+		Block block = blockLocation.getBlock();
 		block.setType(Material.STONE_PLATE);
 		block.getFace(BlockFace.DOWN).setType(underblock);
 		block.getFace(BlockFace.UP).setType(Material.AIR);
@@ -89,10 +103,32 @@ public class KGate {
 		this.location = saneLocation(to);
 	}
 	public Location getLocation() {
-		return location;
+		if (location == null && deferredLocation != null){
+			String[] locationPeices = deferredLocation.split(split);
+			String worldName	= locationPeices[0];
+			int x 				= Integer.parseInt(locationPeices[1]);
+			int y 				= Integer.parseInt(locationPeices[2]);
+			int z 				= Integer.parseInt(locationPeices[3]);
+			
+			World world = Bukkit.getServer().getWorld(worldName);
+			if (world != null){
+				plugin.babble("World '"+worldName+"' wasn't here before, but it is now!  KonseptGate "+name+" should be fine.");
+				this.location = KGate.saneLocation(new Location(world,x,y,z));
+				this.plugin.gates.gateLocation.put(this.location,this);
+				this.plugin.gates.gateName.put(this.name,this);
+				createBlock(plugin.underblock);
+				this.plugin.gates.gateWorldNotLoaded--;
+				plugin.babble(this.plugin.gates.gateWorldNotLoaded+" gates left woth no world to call their own.");
+			}
+			else {
+				plugin.babble("World '"+worldName+"' is not loaded yet, and KonseptGate '"+name+"' is in it!");
+			}
+		}
+		
+		return this.location;
 	}
 	public Location getLocationForTeleport() {
-		Block teleportTo = location.getBlock().getFace(faceFromYaw(yaw));
+		Block teleportTo = getLocation().getBlock().getFace(faceFromYaw(yaw));
 		//teleportTo.setType(Material.AIR);
 		//teleportTo.getFace(BlockFace.UP).setType(Material.AIR);
 		Location forTP = teleportTo.getLocation().clone();
@@ -145,11 +181,17 @@ public class KGate {
 		return cardinalYaw;
 	}
 	public String toString() {
-		String worldName = location.getWorld().getName();
-		int x = (int)location.getBlockX();
-		int y = (int)location.getBlockY();
-		int z = (int)location.getBlockZ();
-		return name+split+worldName+split+x+split+y+split+z+split+yaw+split+targetName;
+		location = getLocation();
+		if (location != null){
+			String worldName = location.getWorld().getName();
+			int x = (int)location.getBlockX();
+			int y = (int)location.getBlockY();
+			int z = (int)location.getBlockZ();
+			return name+split+worldName+split+x+split+y+split+z+split+yaw+split+targetName;
+		}
+		else {
+			return name+split+deferredLocation+split+yaw+split+targetName;
+		}
 	}
 	public void setYaw(float newYaw) {
 		this.yaw = cardinalYaw(newYaw);

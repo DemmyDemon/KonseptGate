@@ -20,13 +20,14 @@ public class KGateList {
 	protected HashMap<Location,KGate> gateLocation 	= new HashMap<Location,KGate>();
 	protected HashMap<String,KGate> gateName		= new HashMap<String,KGate>();
 	protected ArrayList<KGate> gates 				= new ArrayList<KGate>();
+	protected int gateWorldNotLoaded				= 0;
 	
 	KGateList (KG instance, File gateList){
 		plugin = instance;
 		source = gateList;
 	}
 	public void add(String name,Location location,String target){
-		KGate newGate = new KGate(name,location,target);
+		KGate newGate = new KGate(plugin,name,location,target);
 		newGate.createBlock(plugin.underblock);
 		gates.add(newGate);
 		gateName.put(newGate.getName(),newGate);
@@ -86,11 +87,14 @@ public class KGateList {
 				String line = in.readLine();
 				int gateCount = 0;
 				while (line != null){
-					KGate thisGate = new KGate(line);
+					KGate thisGate = new KGate(plugin,line);
 					if (thisGate != null){
-						thisGate.createBlock(plugin.underblock);
 						gates.add(thisGate);
-						gateLocation.put(thisGate.getLocation(),thisGate);
+						Location thisGateLocation = thisGate.getLocation();
+						if (thisGateLocation != null){
+							gateLocation.put(thisGateLocation,thisGate);
+							thisGate.createBlock(plugin.underblock);
+						}
 						gateName.put(thisGate.getName(),thisGate);
 						loadedGates++;
 						if (thisGate.getTargetName().length() > 0){

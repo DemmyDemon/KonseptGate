@@ -27,6 +27,7 @@ public class KG extends JavaPlugin {
 	private PermissionHandler Permissions;
 	private KGPlayerListener playerListener = new KGPlayerListener(this); 
 	private KGEntityListener entityListener = new KGEntityListener(this);
+	private KGWorldListener worldListener = new KGWorldListener(this);
 	protected KGateList	gates;
 	protected int gatesPerPage = 5;
 	
@@ -64,6 +65,7 @@ public class KG extends JavaPlugin {
 		pm.registerEvent(Event.Type.PLAYER_MOVE,playerListener,Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.High,this);
 		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.High,this);
+		pm.registerEvent(Event.Type.WORLD_LOAD,worldListener,Priority.Normal,this);
 		this.out("Enabled");
 	}
 	
