@@ -39,7 +39,7 @@ public class KGPlayerListener extends PlayerListener {
 							Location destination = plugin.gates.gateName.get(origin.getTargetName()).getLocationForTeleport();
 							BukkitScheduler scheduler = plugin.getServer().getScheduler();
 							inTransit.put(player,System.currentTimeMillis()+2000);
-							scheduler.scheduleSyncDelayedTask(plugin, new KGPlayerTeleport(event.getPlayer(),destination,frozen),1);
+							scheduler.scheduleSyncDelayedTask(plugin, new KGPlayerTeleport(event.getPlayer(),destination,frozen,plugin.fireEffect),1);
 						}
 						else if (origin.getTargetName().equals("")){
 							player.sendMessage("No destination is set for this gate");

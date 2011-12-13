@@ -15,7 +15,7 @@ public class KGEntityListener extends EntityListener {
 	public void onEntityExplode(EntityExplodeEvent event){
 		if (!plugin.isEnabled()) return;
 		for (Block block : event.blockList()){
-			Block above = block.getFace(BlockFace.UP);
+			Block above = block.getRelative(BlockFace.UP);
 			if (plugin.gates.gateLocation.containsKey(block.getLocation())){
 				event.setCancelled(true);
 				break;

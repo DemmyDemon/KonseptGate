@@ -79,18 +79,18 @@ public class KGate {
 		if (blockLocation == null) return;
 		Block block = blockLocation.getBlock();
 		block.setType(Material.STONE_PLATE);
-		block.getFace(BlockFace.DOWN).setType(underblock);
-		block.getFace(BlockFace.UP).setType(Material.AIR);
-		Block target = location.getBlock().getFace(faceFromYaw(yaw));
+		block.getRelative(BlockFace.DOWN).setType(underblock);
+		block.getRelative(BlockFace.UP).setType(Material.AIR);
+		Block target = location.getBlock().getRelative(faceFromYaw(yaw));
 		target.setType(Material.AIR);
-		target.getFace(BlockFace.UP).setType(Material.AIR);
+		target.getRelative(BlockFace.UP).setType(Material.AIR);
 	}
 	public void eraseBlock(){
 		Block block = location.getBlock();
 		block.setType(Material.AIR);
-		Block below = block.getFace(BlockFace.DOWN);
-		below.setType(below.getFace(BlockFace.NORTH).getType());
-		block.getFace(BlockFace.UP).setType(Material.AIR);
+		Block below = block.getRelative(BlockFace.DOWN);
+		below.setType(below.getRelative(BlockFace.NORTH).getType());
+		block.getRelative(BlockFace.UP).setType(Material.AIR);
 	}
 	public void setName(String name) {
 		name.replaceAll(split,"");
@@ -128,9 +128,7 @@ public class KGate {
 		return this.location;
 	}
 	public Location getLocationForTeleport() {
-		Block teleportTo = getLocation().getBlock().getFace(faceFromYaw(yaw));
-		//teleportTo.setType(Material.AIR);
-		//teleportTo.getFace(BlockFace.UP).setType(Material.AIR);
+		Block teleportTo = getLocation().getBlock().getRelative(faceFromYaw(yaw));
 		Location forTP = teleportTo.getLocation().clone();
 		forTP.setX(forTP.getX()+0.5);
 		forTP.setZ(forTP.getZ()+0.5);

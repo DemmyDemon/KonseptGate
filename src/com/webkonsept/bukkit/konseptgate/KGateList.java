@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 
 public class KGateList {
 	private KG plugin;
@@ -67,6 +68,12 @@ public class KGateList {
 			plugin.babble("Attempt at removing NULL gate "+name+" averted");
 		}
 	}
+	public boolean isGate(Location location){
+		return gateLocation.containsKey(location);
+	}
+	public boolean isGate(Block block){
+		return isGate(block.getLocation());
+	}
 	public void remove(KGate gate){
 		if (gate == null) return;
 		remove(gate.getName());
@@ -82,11 +89,29 @@ public class KGateList {
 			gates.clear();
 			gateLocation.clear();
 			gateName.clear();
+			BufferedReader in = null;
+			String line = "";
+			int gateCount = 0;
 			try {
-				BufferedReader in = new BufferedReader(new FileReader(source));
-				String line = in.readLine();
-				int gateCount = 0;
-				while (line != null){
+				in = new BufferedReader(new FileReader(source));
+				line = in.readLine();
+			}
+			catch (FileNotFoundException e) {
+				// Stupid Java... We'll NEVER GET HERE, unless the file stops existing in under a nanosecond!
+				e.printStackTrace();
+				plugin.crap("Gates file went away!  This is a MAJOR problem.");
+				return gateCount;
+			}
+			catch (IOException e){
+				e.printStackTrace();
+				plugin.crap("There was an IOException while reading the very first line of your gates file.  VERY VERY BAD!");
+				return gateCount;
+			}
+				
+				
+				
+			while (line != null){
+				try {
 					KGate thisGate = new KGate(plugin,line);
 					if (thisGate != null){
 						gates.add(thisGate);
@@ -107,24 +132,26 @@ public class KGateList {
 					}
 					line = in.readLine();
 				}
-				in.close();
-				plugin.babble(gateCount+" konsept gates!");
-			}
-			catch (FileNotFoundException e) {
-				// Stupid Java... We'll NEVER GET HERE, unless the file stops existing in under a nanosecond!
-				e.printStackTrace();
-				plugin.crap("How the hell did THAT happen?!");
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-				plugin.crap("IOException reading gate file "+source.getAbsolutePath());
-				if (!source.canRead()){
-					plugin.crap("CAN'T READ FROM "+source.getAbsolutePath());
+				catch (IOException e) {
+					e.printStackTrace();
+					plugin.crap("IOException reading gate file "+source.getAbsolutePath());
+					if (!source.canRead()){
+						plugin.crap("CAN'T READ FROM "+source.getAbsolutePath());
+					}
+				} catch (ParseException e) {
+					e.printStackTrace();
+					plugin.crap("Parse Exception while reading gate file: "+e.getMessage());
 				}
-			} catch (ParseException e) {
-				e.printStackTrace();
-				plugin.crap("Parse Exception while reading gate file: "+e.getMessage());
 			}
+			
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				plugin.crap("Oh no!  There was an IOException closing your gates.txt file.  The file is probably lost :-(");
+			}
+			
+			plugin.babble(gateCount+" konsept gates!");
 		}
 		else {
 			plugin.out("KonseptGateFile "+source.getAbsolutePath()+" does not exist:  Creating new!");

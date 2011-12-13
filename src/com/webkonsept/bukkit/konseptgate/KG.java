@@ -1,7 +1,10 @@
 package com.webkonsept.bukkit.konseptgate;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
@@ -10,32 +13,30 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
-
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
 
 public class KG extends JavaPlugin {
 	private Logger log = Logger.getLogger("Minecraft");
-	private PermissionHandler Permissions;
-	private KGPlayerListener playerListener = new KGPlayerListener(this); 
+	private KGPlayerListener playerListener = new KGPlayerListener(this);
+	private KGBlockListener blockListener = new KGBlockListener(this);
 	private KGEntityListener entityListener = new KGEntityListener(this);
 	private KGWorldListener worldListener = new KGWorldListener(this);
 	protected KGateList	gates;
 	protected int gatesPerPage = 5;
+	protected boolean fireEffect = true;
 	
 	protected HashSet<Player> ignored = new HashSet<Player>();
 	
 	// Settings
 	protected boolean verbose = true;
-	protected Material underblock = Material.GLOWSTONE;
+	protected Material underblock = Material.NETHER_BRICK;
 	protected String defaultTarget = "";
 	
 	@Override
@@ -55,18 +56,19 @@ public class KG extends JavaPlugin {
 	public void onEnable() {
 		this.loadConfig();
 	 	gates = new KGateList(this,new File(this.getDataFolder(),"gates.txt"));
-		gates.load();
+		int gateNumber = gates.load();
 		PluginManager pm = this.getServer().getPluginManager();
-		if(!setupPermissions()){
-			this.crap("PERMISSIONS plugin not loaded!  THIS WON'T WORK!");
-			pm.disablePlugin(this);
-			return;
-		}
+		pm.registerEvent(Event.Type.BLOCK_BREAK,blockListener,Priority.Normal,this);
+		pm.registerEvent(Event.Type.BLOCK_PHYSICS,blockListener,Priority.Normal,this);
+		
+		pm.registerEvent(Event.Type.BLOCK_PISTON_EXTEND,blockListener,Priority.Normal,this);
+		pm.registerEvent(Event.Type.BLOCK_PISTON_RETRACT,blockListener,Priority.Normal,this);
+		
 		pm.registerEvent(Event.Type.PLAYER_MOVE,playerListener,Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.High,this);
 		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.High,this);
 		pm.registerEvent(Event.Type.WORLD_LOAD,worldListener,Priority.Normal,this);
-		this.out("Enabled");
+		this.out("Enabled ("+gateNumber+" gates)");
 	}
 	
 	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
@@ -147,26 +149,35 @@ public class KG extends JavaPlugin {
 			}
 			else if (args[0].equalsIgnoreCase("list")){
 				validCommand = true;
-				if (permit(player,"konseptgate.command.list")){
-					/*  TODO: Fix paging crap
-					int listSize = gates.gates.size();
-					int pages = (int) ((listSize / gatesPerPage) + 0.9);
-					if (args.length > 1){
-						int page = 1;
-						try {
-							page = Integer.parseInt(args[1]);
-						}
-						catch (NumberFormatException e){
-							// swallow it, and go with the default of 1.
-						}
+				if (permit(player,"konseptgate.command.list")){				
+					String lookFor = null;
+					int gateNum = gates.gates.size();
+					if (args.length >= 2){
+						lookFor = args[1];
+						player.sendMessage(gateNum+" gate"+plural(gateNum)+", looking for gates matching "+lookFor);
 					}
-					if (pages > 1){
-						
+					else {
+						player.sendMessage(gateNum+" gate"+plural(gateNum));
 					}
-					*/
-					player.sendMessage(gates.gates.size()+" gates:");
+					ArrayList<String> gateList = new ArrayList<String>();
 					for (KGate gate : gates.gates){
-						player.sendMessage(gate.getName()+" ("+gate.getYaw()+") -> "+gate.getTargetName());
+						if (lookFor != null && gate.getName().contains(lookFor)){
+							gateList.add(gate.getName().replace(lookFor,ChatColor.RED+lookFor+ChatColor.WHITE)+" -> "+gate.getTargetName());
+						}
+						else if (lookFor != null && gate.getTargetName().contains(lookFor)){
+							gateList.add(gate.getName()+" -> "+gate.getTargetName().replace(lookFor,ChatColor.RED+lookFor+ChatColor.WHITE));
+						}
+						else if (lookFor == null){
+							gateList.add(gate.getName()+" -> "+gate.getTargetName());
+						}
+					}
+					Object[] sorted = gateList.toArray();
+					Arrays.sort(sorted);
+					
+					for (Object gate : sorted ){
+						if (gate instanceof String){
+							player.sendMessage((String)gate);
+						}
 					}
 				}
 				else {
@@ -193,7 +204,7 @@ public class KG extends JavaPlugin {
 					if (gates.gateName.containsKey(gateName)){
 						Location destination = gates.gateName.get(gateName).getLocationForTeleport();
 						getServer().getScheduler().scheduleAsyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),20);
-						getServer().getScheduler().scheduleSyncDelayedTask(this, new KGPlayerTeleport(player,destination,playerListener.frozen),1);
+						getServer().getScheduler().scheduleSyncDelayedTask(this, new KGPlayerTeleport(player,destination,playerListener.frozen,this.fireEffect),1);
 						player.teleport(destination);
 					}
 					else {
@@ -253,33 +264,7 @@ public class KG extends JavaPlugin {
 		return validCommand;
 	}
 	public boolean permit(Player player,String permission){
-		if (player == null) {
-			this.crap("NULL player passed to permission check!");
-			return false;
-		}
-		if (permission == null) {
-			this.crap("NULL permission passed to permission check!");
-			return false;
-		}
-		boolean allow = Permissions.has(player,permission);
-		this.babble(player.getName()+" asked permission to "+permission+": "+allow);
-		return allow;
-	}
-	private boolean setupPermissions() {
-		Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
-		if (this.Permissions == null){
-			if (test != null){
-				this.Permissions = ((Permissions)test).getHandler();
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-		else {
-			this.crap("Urr, this is odd...  Permissions are already set up!");
-			return true;
-		}
+		return player.hasPermission(permission);
 	}
 	public void out(String message) {
 		PluginDescriptionFile pdfFile = this.getDescription();
@@ -295,30 +280,73 @@ public class KG extends JavaPlugin {
 		log.info("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + " VERBOSE] " + message);
 	}
 	public void loadConfig() {
-		File configFile = new File(this.getDataFolder(),"settings.yml");
-		File configDir = this.getDataFolder();
-		Configuration config = new Configuration(configFile);
+		File configFile = new File(getDataFolder(),"config.yml");
+		File oldFile = new File(getDataFolder(),"settings.yml");
+		FileConfiguration config = getConfig();
 		
-		config.load();
-		this.verbose = config.getBoolean("verbose", false);
-		this.defaultTarget = config.getString("defaultTarget","");
-		int underblockID = config.getInt("underblockID",89);
-		if (underblockID == 0){
-			underblockID = 89;
-		}
-		this.underblock = Material.getMaterial(underblockID);
-		if (!configFile.exists()){
-			this.out("Configuration file does not exist.  Creating "+configFile.getAbsolutePath());
-			if (!configDir.exists()){
-				configDir.mkdir();
-			}
+		if (oldFile.exists()){
 			try {
-				configFile.createNewFile();
+				config.load(oldFile);
+				
+				if (oldFile.delete()){
+					out("Old configuration file found, read and deleted.  New filename is "+configFile.getAbsolutePath());
+				}
+				else {
+					crap("Old configuration file found and read BUT COULD NOT BE DELETED!  Suggest manual deletion of "+configFile.getAbsolutePath());
+				}
+				
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				crap("Okay, something REALLY odd happened.  A file I know to exist just suddenly went away: "+oldFile.getAbsolutePath());
 			} catch (IOException e) {
 				e.printStackTrace();
-				this.crap("IOError while creating config file: "+e.getMessage());
+				crap("IOException while reading your old config file ("+oldFile.getAbsolutePath()+")");
+			} catch (InvalidConfigurationException e) {
+				e.printStackTrace();
+				crap("Old config file ("+oldFile.getAbsolutePath()+") has broken YAML in it.");
 			}
-			config.save();
+		}
+
+		
+		this.verbose = config.getBoolean("verbose", false);
+		babble("Verbose mode ON!");
+		
+		this.defaultTarget = config.getString("defaultTarget","");
+		if (defaultTarget.isEmpty()){
+			babble("No default target gate (which is fine, really!)");
+		}
+		else {
+			babble("Default target gate is "+defaultTarget);
+		}
+		
+		this.fireEffect = config.getBoolean("fireEffect", true);
+		if (fireEffect){
+			babble("Fire effect is enabled");
+		}
+		else {
+			babble("Fire effect is disabled");
+		}
+		
+		int underblockID = config.getInt("underblockID",89);  // ID 89 is Glowstone
+		Material useUnderblock = Material.getMaterial(underblockID);
+		if (useUnderblock == null){
+			crap("Invalid underblockID in config, using STONE");
+			this.underblock = Material.STONE;
+		}
+		else {
+			this.underblock = useUnderblock;
+		}
+		babble("Underblock is "+underblock.toString());
+		
+		
+		if (!configFile.exists()){
+			this.out("Configuration file does not exist.  Creating "+configFile.getAbsolutePath());
+			try {
+				config.save(configFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+				crap("Failed saving configuration file!  OSHIT!!!");
+			}
 		}
 	}
 	public String plural(int number) {

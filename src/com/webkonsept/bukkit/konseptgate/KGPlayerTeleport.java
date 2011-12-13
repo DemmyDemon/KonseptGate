@@ -11,12 +11,16 @@ public class KGPlayerTeleport implements Runnable {
 	Location destination;
 	HashSet<Player> frozen;
 
-	KGPlayerTeleport (Player player,Location destination,HashSet<Player> frozen){
+	KGPlayerTeleport (Player player,Location destination,HashSet<Player> frozen,boolean showFireEffect){
 		this.frozen = frozen;
 		this.player = player;
 		this.destination = destination;
 		player.setVelocity(new Vector(0,0,0));
 		frozen.add(player);
+		if(showFireEffect){
+			player.setFireTicks(20);
+			player.setNoDamageTicks(21);
+		}
 	}
 	@Override
 	public void run() {

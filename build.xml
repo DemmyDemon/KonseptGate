@@ -3,7 +3,6 @@
 <!DOCTYPE project [
        <!ENTITY common SYSTEM "common.xml">
 ]>
-
 <project name="KonseptGate" default="deploy">
 	<path id="class.path">
 		<fileset dir="./libs/" includes="*.jar" />
@@ -16,31 +15,42 @@
     		destdir="./bin"
     	/>
   	</target>
-  	<target name="jar" depends="clean,compile">
+  	<target name="jar" depends="compile">
   		<copy
   			file="./src/plugin.yml"
   			tofile="./bin/plugin.yml"
   		/>
+        <copy
+            file="./src/config.yml"
+            tofile="./bin/config.yml"
+        />
     	<jar destfile="${ant.project.name}.jar"
       		basedir="./bin"
       		includes="**/*"
     	/>
   	</target>
+   <target name="testing" depends="clean,jar">
+        <copy
+            file="${ant.project.name}.jar"
+            tofile="C:/Users/Fredrik/Desktop/Minecraft/Server/plugins/${ant.project.name}.jar"
+        />
+    </target>
   	<target name="clean" depends="">
     	<delete 
     		dir="bin/" 
     	/>
   	</target>
-	<target name="deploy" depends="jar">
+	<target name="deploy" depends="clean,jar">
 		<copy 
 			file="${ant.project.name}.jar"
 			tofile="W:/server/plugins/${ant.project.name}.jar"
 		/>
 	</target>
-    <target name="publish" depends="clean,jar">
-        <copy
-            file="${ant.project.name}.jar"
-            tofile="W:/publish/${ant.project.name}.jar"
-        />
-    </target>
+	   <target name="publish" depends="clean,jar">
+	        <copy
+	          file="${ant.project.name}.jar"
+	          tofile="W:/publish/${ant.project.name}.jar"
+	        />
+	    </target>
+  	<target name="buildJar" depends="clean,jar" />
 </project>
