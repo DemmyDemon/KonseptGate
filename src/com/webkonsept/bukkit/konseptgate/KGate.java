@@ -1,6 +1,8 @@
 package com.webkonsept.bukkit.konseptgate;
 
 import java.text.ParseException;
+import java.util.HashSet;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,6 +20,47 @@ public class KGate {
 	
 	private String split = ",";
 	private int expectedNumberOfFields = 7;
+	
+	private static HashSet<Material> nonHinderingBlocks = new HashSet<Material>(){
+		private static final long serialVersionUID = 12345L;  // Just to squash the damn warning :-P
+
+		{
+			// Air is the very definition of a non-hindering block
+			add(Material.AIR);
+			
+			// Stuff hanging on the walls that we can walk through
+			add(Material.WALL_SIGN);
+			add(Material.SIGN_POST);
+			add(Material.TORCH);
+			add(Material.LADDER);
+			
+			// Plants that we phase through
+			add(Material.DEAD_BUSH);
+			add(Material.VINE);
+			add(Material.YELLOW_FLOWER);
+			add(Material.RED_ROSE);
+			add(Material.SAPLING);
+			add(Material.SUGAR_CANE_BLOCK);
+			add(Material.LONG_GRASS);
+			add(Material.BROWN_MUSHROOM);
+			add(Material.RED_MUSHROOM);
+			
+			// Redstone/mechanism ignored as blocks
+			add(Material.REDSTONE_WIRE);
+			add(Material.REDSTONE_TORCH_OFF);
+			add(Material.REDSTONE_TORCH_ON);
+			add(Material.STONE_BUTTON);
+			add(Material.STONE_PLATE);
+			add(Material.WOOD_PLATE);
+			add(Material.DIODE_BLOCK_OFF);
+			add(Material.DIODE_BLOCK_ON);
+			
+			// Rails are ignored, too.
+			add(Material.DETECTOR_RAIL);
+			add(Material.RAILS);
+		}
+		
+	};
 	
 	KGate (KG instance,String gateString) throws ParseException {
 		this.plugin = instance;
@@ -80,17 +123,23 @@ public class KGate {
 		Block block = blockLocation.getBlock();
 		block.setType(Material.STONE_PLATE);
 		block.getRelative(BlockFace.DOWN).setType(underblock);
-		block.getRelative(BlockFace.UP).setType(Material.AIR);
-		Block target = location.getBlock().getRelative(faceFromYaw(yaw));
-		target.setType(Material.AIR);
-		target.getRelative(BlockFace.UP).setType(Material.AIR);
+		Block[] clearBlocks = {
+			block.getRelative(faceFromYaw(yaw)),
+			block.getRelative(faceFromYaw(yaw)).getRelative(BlockFace.UP),
+			block.getRelative(BlockFace.UP),
+		};
+		for (Block clearBlock : clearBlocks){
+			if (!nonHinderingBlocks.contains(clearBlock.getType())){
+				clearBlock.setType(Material.AIR);
+			}
+		}
+		
 	}
 	public void eraseBlock(){
 		Block block = location.getBlock();
 		block.setType(Material.AIR);
 		Block below = block.getRelative(BlockFace.DOWN);
 		below.setType(below.getRelative(BlockFace.NORTH).getType());
-		block.getRelative(BlockFace.UP).setType(Material.AIR);
 	}
 	public void setName(String name) {
 		name.replaceAll(split,"");
