@@ -29,13 +29,13 @@ public class KGateList {
 	}
 	public void add(String name,Location location,String target){
 		KGate newGate = new KGate(plugin,name,location,target);
-		newGate.createBlock(plugin.underblock);
 		gates.add(newGate);
 		gateName.put(newGate.getName(),newGate);
 		gateLocation.put(newGate.getLocation(),newGate);
 		if (target.length() == 0){
 			target = "[not set]";
 		}
+		newGate.createBlock(plugin.underblock);
 		plugin.babble("New gate created: "+name+".  Target is "+target+".");
 		save();
 	}

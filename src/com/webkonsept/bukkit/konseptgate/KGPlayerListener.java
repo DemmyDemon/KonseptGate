@@ -35,11 +35,19 @@ public class KGPlayerListener extends PlayerListener {
 					if (plugin.permit(player, "konseptgate.teleport")){
 						KGate origin = plugin.gates.gateLocation.get(saneOriginLocation);
 						if (plugin.gates.gateName.containsKey(origin.getTargetName())){
-							plugin.babble("Teleporting "+player.getName()+" to "+origin.getTargetName());
-							Location destination = plugin.gates.gateName.get(origin.getTargetName()).getLocationForTeleport();
-							BukkitScheduler scheduler = plugin.getServer().getScheduler();
-							inTransit.put(player,System.currentTimeMillis()+2000);
-							scheduler.scheduleSyncDelayedTask(plugin, new KGPlayerTeleport(event.getPlayer(),destination,frozen,plugin.fireEffect),1);
+							KGate destinationGate = plugin.gates.gateName.get(origin.getTargetName());
+							
+							Location destination = destinationGate.getLocationForTeleport();
+							if (destination != null){
+								plugin.babble("Teleporting "+player.getName()+" to "+origin.getTargetName());
+								BukkitScheduler scheduler = plugin.getServer().getScheduler();
+								inTransit.put(player,System.currentTimeMillis()+2000);
+								scheduler.scheduleSyncDelayedTask(plugin, new KGPlayerTeleport(event.getPlayer(),destination,frozen,plugin.fireEffect),1);
+							}
+							else {
+								plugin.babble("Target world isn't loaded yet!");
+								player.sendMessage(ChatColor.RED+"Sorry, the target world is not loaded yet!");
+							}
 						}
 						else if (origin.getTargetName().equals("")){
 							player.sendMessage("No destination is set for this gate");
