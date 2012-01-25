@@ -7,13 +7,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitScheduler;
 
-public class KGPlayerListener extends PlayerListener {
+public class KGPlayerListener implements Listener {
 	private KG plugin = null;
 	public HashMap<Player,Long> inTransit = new HashMap<Player,Long>();
 	public HashSet<Player> frozen = new HashSet<Player>();
@@ -21,7 +23,9 @@ public class KGPlayerListener extends PlayerListener {
 	KGPlayerListener (KG instance){
 		plugin = instance;
 	}
-	public void onPlayerInteract(PlayerInteractEvent event){
+	
+	@EventHandler(priority=EventPriority.HIGH)
+	public void onPlayerInteract(final PlayerInteractEvent event){
 		if (!plugin.isEnabled()) return;
 		if (event.isCancelled()) return;
 		Player player = event.getPlayer();
@@ -78,7 +82,8 @@ public class KGPlayerListener extends PlayerListener {
 			}
 		}
 	}
-	public void onPlayerMove (PlayerMoveEvent event){
+	@EventHandler
+	public void onPlayerMove (final PlayerMoveEvent event){
 		if (!plugin.isEnabled()) return;
 		if (event.isCancelled()) return;
 		if (frozen.contains(event.getPlayer())){

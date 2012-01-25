@@ -16,8 +16,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -54,20 +52,30 @@ public class KG extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		this.loadConfig();
+		this.loadConfig(false);
 	 	gates = new KGateList(this,new File(this.getDataFolder(),"gates.txt"));
 		int gateNumber = gates.load();
 		PluginManager pm = this.getServer().getPluginManager();
+		/* OLD!
 		pm.registerEvent(Event.Type.BLOCK_BREAK,blockListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.BLOCK_PHYSICS,blockListener,Priority.Normal,this);
-		
 		pm.registerEvent(Event.Type.BLOCK_PISTON_EXTEND,blockListener,Priority.Normal,this);
 		pm.registerEvent(Event.Type.BLOCK_PISTON_RETRACT,blockListener,Priority.Normal,this);
+		*/
+		pm.registerEvents(blockListener,this);
 		
+		/* OLD!
 		pm.registerEvent(Event.Type.PLAYER_MOVE,playerListener,Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.High,this);
+		*/
+		pm.registerEvents(playerListener,this);
+		
+		/* OLD
 		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.High,this);
 		pm.registerEvent(Event.Type.WORLD_LOAD,worldListener,Priority.Normal,this);
+		*/
+		pm.registerEvents(worldListener,this);
+		pm.registerEvents(entityListener,this);
 		this.out("Enabled ("+gateNumber+" gates)");
 	}
 	
@@ -187,9 +195,31 @@ public class KG extends JavaPlugin {
 			else if (args[0].equalsIgnoreCase("reload")){
 				validCommand = true;
 				if (permit(player,"konseptgate.command.reload")){
-					loadConfig();
+					loadConfig(true);
 					int gatesLoaded = gates.load();
-					player.sendMessage(ChatColor.GOLD+"KonseptGate reloaded! "+gatesLoaded+" gates found.");
+					player.sendMessage(ChatColor.GOLD+"KonseptGate reloaded!");
+					player.sendMessage(ChatColor.GOLD+"   "+gatesLoaded+" gates found.");
+					
+					player.sendMessage(ChatColor.GOLD+"   Underblock is "+underblock.toString());
+					if (defaultTarget.length() > 0){
+						player.sendMessage(ChatColor.GOLD+"   Default target is '"+defaultTarget+"'");
+					}
+					else {
+						player.sendMessage(ChatColor.GOLD+"   No default target set");
+					}
+					
+					if (this.fireEffect){
+						player.sendMessage(ChatColor.GOLD+"   Fire effect is ON");
+					}
+					else {
+						player.sendMessage(ChatColor.GOLD+"   Fire effect is OFF");
+					}
+					if (this.verbose){
+						player.sendMessage(ChatColor.GOLD+"   Console verbosity is ON");
+					}
+					else {
+						player.sendMessage(ChatColor.GOLD+"   Console verbosity is OFF");
+					}
 				}
 			}
 			else if (args[0].equalsIgnoreCase("jump")){
@@ -279,10 +309,22 @@ public class KG extends JavaPlugin {
 		PluginDescriptionFile pdfFile = this.getDescription();
 		log.info("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + " VERBOSE] " + message);
 	}
-	public void loadConfig() {
+	public void loadConfig(boolean forceReload) {
 		File configFile = new File(getDataFolder(),"config.yml");
 		File oldFile = new File(getDataFolder(),"settings.yml");
 		FileConfiguration config = getConfig();
+		
+		if (forceReload){
+			try {
+				config.load(configFile);
+			} catch (FileNotFoundException e) {
+				crap("Forced reload of "+configFile.getAbsolutePath()+" FAILED:  File not found!");
+			} catch (IOException e) {
+				crap("Forced reload of "+configFile.getAbsolutePath()+" FAILED:  "+e.getMessage());
+			} catch (InvalidConfigurationException e) {
+				crap("Forced reload of "+configFile.getAbsolutePath()+" FAILED:  Invalid YAML!");
+			}
+		}
 		
 		if (oldFile.exists()){
 			try {

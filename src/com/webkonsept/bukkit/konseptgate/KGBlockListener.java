@@ -5,20 +5,22 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class KGBlockListener extends BlockListener {
+public class KGBlockListener implements Listener {
 	KG plugin;
 	KGBlockListener (KG instance){
 		plugin = instance;
 	}
 	
-	public void onBlockBreak(BlockBreakEvent event){
+	@EventHandler
+	public void onBlockBreak(final BlockBreakEvent event){
 		Block block = event.getBlock();
 		Block above = block.getRelative(BlockFace.UP);
 		boolean message = false;
@@ -41,7 +43,9 @@ public class KGBlockListener extends BlockListener {
 			}
 		}
 	}
-	public void onBlockPhysics(BlockPhysicsEvent event){
+	
+	@EventHandler
+	public void onBlockPhysics(final BlockPhysicsEvent event){
 		if (plugin.gates.gateLocation.containsKey(event.getBlock().getLocation())){
 			event.setCancelled(true);  // Allowing belowBlock to be glowstone, glass etc etc
 		}
@@ -49,7 +53,9 @@ public class KGBlockListener extends BlockListener {
 			event.setCancelled(true);  // Again, to allow fancy materials.
 		}
 	}
-	public void onBlockPistonRetract(BlockPistonRetractEvent event){
+	
+	@EventHandler
+	public void onBlockPistonRetract(final BlockPistonRetractEvent event){
 		if (event.isSticky()){ // If it's not sticky it can't affect any Gate.
 			Block piston = event.getBlock();
 			Block affected = piston.getRelative(event.getDirection()).getRelative(event.getDirection());
@@ -69,7 +75,9 @@ public class KGBlockListener extends BlockListener {
 			}
 		}
 	}
-	public void onBlockPistonExtend(BlockPistonExtendEvent event){
+	
+	@EventHandler
+	public void onBlockPistonExtend(final BlockPistonExtendEvent event){
 		BlockFace facing = event.getDirection();
 		
 		if (plugin.gates.isGate(event.getBlock().getRelative(facing))){

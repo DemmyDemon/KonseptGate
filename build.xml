@@ -3,7 +3,7 @@
 <!DOCTYPE project [
        <!ENTITY common SYSTEM "common.xml">
 ]>
-<project name="KonseptGate" default="deploy">
+<project name="KonseptGate" default="testing">
 	<path id="class.path">
 		<fileset dir="./libs/" includes="*.jar" />
   	</path>

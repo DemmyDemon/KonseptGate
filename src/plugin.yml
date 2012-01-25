@@ -1,6 +1,6 @@
 name: KonseptGate
 main: com.webkonsept.bukkit.konseptgate.KG
-version: 0.4.1
+version: 0.5
 branch: stable
 website: http://minecraft.webkonsept.com/plugins/details/KonseptGate.html
 location: http://minecraft.webkonsept.com/plugins/download/KonseptGate.jar
@@ -21,8 +21,8 @@ required: []
 optional: []
 engines:
     craftbukkit:
-        min: 1597
-        max: 1597
+        min: 1818
+        max: 1818
 permissions:
     konseptgate.*:
         description: Gives full access
