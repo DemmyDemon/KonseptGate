@@ -36,7 +36,7 @@ public class KGateList {
 			target = "[not set]";
 		}
 		newGate.createBlock(plugin.underblock);
-		plugin.babble("New gate created: "+name+".  Target is "+target+".");
+		plugin.verbose("New gate created: "+name+".  Target is "+target+".");
 		save();
 	}
 	public void add(String name,Location location){
@@ -51,7 +51,7 @@ public class KGateList {
 		gateLocation.put(gate.getLocation().clone(),gate);
 		gate.createBlock(plugin.underblock);
 		save();
-		plugin.babble("Moved gate '"+name+"' to "+to.getX()+","+to.getY()+","+to.getZ());
+		plugin.verbose("Moved gate '"+name+"' to "+to.getX()+","+to.getY()+","+to.getZ());
 	}
 	public void remove(String name){
 		if (name == null) return;
@@ -62,10 +62,10 @@ public class KGateList {
 			gateLocation.remove(doomed.getLocation());
 			gates.remove(doomed);
 			save();
-			plugin.babble("Removed gate "+name);
+			plugin.verbose("Removed gate "+name);
 		}
 		else {
-			plugin.babble("Attempt at removing NULL gate "+name+" averted");
+			plugin.verbose("Attempt at removing NULL gate "+name+" averted");
 		}
 	}
 	public boolean isGate(Location location){
@@ -85,7 +85,7 @@ public class KGateList {
 	public int load(){
 		int loadedGates = 0;
 		if (source.exists()){
-			plugin.babble("Loading gates from "+source.getAbsolutePath());
+			plugin.verbose("Loading gates from "+source.getAbsolutePath());
 			gates.clear();
 			gateLocation.clear();
 			gateName.clear();
@@ -99,12 +99,12 @@ public class KGateList {
 			catch (FileNotFoundException e) {
 				// Stupid Java... We'll NEVER GET HERE, unless the file stops existing in under a nanosecond!
 				e.printStackTrace();
-				plugin.crap("Gates file went away!  This is a MAJOR problem.");
+				plugin.problem("Gates file went away!  This is a MAJOR problem.");
 				return gateCount;
 			}
 			catch (IOException e){
 				e.printStackTrace();
-				plugin.crap("There was an IOException while reading the very first line of your gates file.  VERY VERY BAD!");
+				plugin.problem("There was an IOException while reading the very first line of your gates file.  VERY VERY BAD!");
 				return gateCount;
 			}
 				
@@ -123,10 +123,10 @@ public class KGateList {
 						gateName.put(thisGate.getName(),thisGate);
 						loadedGates++;
 						if (thisGate.getTargetName().length() > 0){
-							plugin.babble("Loaded "+thisGate.getName()+", linked to "+thisGate.getTargetName());
+							plugin.verbose("Loaded "+thisGate.getName()+", linked to "+thisGate.getTargetName());
 						}
 						else {
-							plugin.babble("Loaded "+thisGate.getName()+", which is unlinked.");
+							plugin.verbose("Loaded "+thisGate.getName()+", which is unlinked.");
 						}
 						gateCount++;
 					}
@@ -134,13 +134,13 @@ public class KGateList {
 				}
 				catch (IOException e) {
 					e.printStackTrace();
-					plugin.crap("IOException reading gate file "+source.getAbsolutePath());
+					plugin.problem("IOException reading gate file "+source.getAbsolutePath());
 					if (!source.canRead()){
-						plugin.crap("CAN'T READ FROM "+source.getAbsolutePath());
+						plugin.problem("CAN'T READ FROM "+source.getAbsolutePath());
 					}
 				} catch (ParseException e) {
 					e.printStackTrace();
-					plugin.crap("Parse Exception while reading gate file: "+e.getMessage());
+					plugin.problem("Parse Exception while reading gate file: "+e.getMessage());
 				}
 			}
 			
@@ -148,10 +148,10 @@ public class KGateList {
 				in.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-				plugin.crap("Oh no!  There was an IOException closing your gates.txt file.  The file is probably lost :-(");
+				plugin.problem("Oh no!  There was an IOException closing your gates.txt file.  The file is probably lost :-(");
 			}
 			
-			plugin.babble(gateCount+" konsept gates!");
+			plugin.verbose(gateCount+" konsept gates!");
 		}
 		else {
 			plugin.out("KonseptGateFile "+source.getAbsolutePath()+" does not exist:  Creating new!");
@@ -159,16 +159,16 @@ public class KGateList {
 				source.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
-				plugin.crap("IOException creating gate file "+source.getAbsolutePath());
+				plugin.problem("IOException creating gate file "+source.getAbsolutePath());
 				if (!source.canWrite()){
-					plugin.crap("CAN'T WRITE TO "+source.getAbsolutePath());
+					plugin.problem("CAN'T WRITE TO "+source.getAbsolutePath());
 				}
 			}
 		}
 		return loadedGates;
 	}
 	public void save(){
-		plugin.babble("Saving gates");
+		plugin.verbose("Saving gates");
 		try {
 			if (!source.exists()){
 				source.createNewFile();
@@ -182,12 +182,12 @@ public class KGateList {
 		}
 		catch (IOException e){
 			e.printStackTrace();
-			plugin.crap("IOException writing gate file "+source.getAbsolutePath());
+			plugin.problem("IOException writing gate file "+source.getAbsolutePath());
 			if (!source.canWrite()){
-				plugin.crap("CAN'T WRITE TO "+source.getAbsolutePath());
+				plugin.problem("CAN'T WRITE TO "+source.getAbsolutePath());
 			}
 		}
-		plugin.babble("Saved!");
+		plugin.verbose("Saved!");
 	}
 	public void save(File alternativeGateFile){
 		source = alternativeGateFile;

@@ -62,7 +62,7 @@ public class KGBlockListener implements Listener {
 			// Direction twice, because retraction affects TWO blocks away due to being extended, right-oh?
 			
 			if (plugin.gates.gateLocation.containsKey(affected.getRelative(BlockFace.UP).getLocation())){
-				plugin.babble("Piston tried to mess with the block below a KonseptGate! BOO!!");
+				plugin.verbose("Piston tried to mess with the block below a KonseptGate! BOO!!");
 				event.setCancelled(true);  // Moving the block below a plate with a piston is bad.
 				
 				byte b = piston.getData();
@@ -81,7 +81,7 @@ public class KGBlockListener implements Listener {
 		BlockFace facing = event.getDirection();
 		
 		if (plugin.gates.isGate(event.getBlock().getRelative(facing))){
-			plugin.babble("Piston tried to mess with a KonseptGate by pushing it! BOO!!");
+			plugin.verbose("Piston tried to mess with a KonseptGate by pushing it! BOO!!");
 			event.setCancelled(true);
 		}
 		else {
@@ -89,17 +89,17 @@ public class KGBlockListener implements Listener {
 				if (plugin.gates.isGate(affected)){
 					// Yeah, this doesn't work because of a bug.
 					// I'll leave it in here as it will "take over" when that bug is fixed.
-					plugin.babble("Piston tried to mess with a KonseptGate! BOO!!");
+					plugin.verbose("Piston tried to mess with a KonseptGate! BOO!!");
 					event.setCancelled(true);
 					break;
 				}
 				else if (plugin.gates.isGate(affected.getRelative(facing))){
-					plugin.babble("Piston tried to mess with a KonseptGate by proxy! BOO!!");
+					plugin.verbose("Piston tried to mess with a KonseptGate by proxy! BOO!!");
 					event.setCancelled(true);
 					break;
 				}
 				else if (plugin.gates.isGate(affected.getRelative(BlockFace.UP))){
-					plugin.babble("Piston tried to mess with the block below a KonseptGate! BOO!!");
+					plugin.verbose("Piston tried to mess with the block below a KonseptGate! BOO!!");
 					event.setCancelled(true);
 					break;
 				}

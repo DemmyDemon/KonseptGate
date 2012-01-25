@@ -1,8 +1,6 @@
 package com.webkonsept.bukkit.konseptgate;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,14 +11,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class KG extends JavaPlugin {
+    private static final String pluginName = "KonseptGate";
+    private static String pluginVersion = "???"; 
 	private Logger log = Logger.getLogger("Minecraft");
 	private KGPlayerListener playerListener = new KGPlayerListener(this);
 	private KGBlockListener blockListener = new KGBlockListener(this);
@@ -52,30 +49,17 @@ public class KG extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		this.loadConfig(false);
+	    pluginVersion = this.getDescription().getVersion();
+		this.loadConfig();
 	 	gates = new KGateList(this,new File(this.getDataFolder(),"gates.txt"));
 		int gateNumber = gates.load();
+		
 		PluginManager pm = this.getServer().getPluginManager();
-		/* OLD!
-		pm.registerEvent(Event.Type.BLOCK_BREAK,blockListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.BLOCK_PHYSICS,blockListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.BLOCK_PISTON_EXTEND,blockListener,Priority.Normal,this);
-		pm.registerEvent(Event.Type.BLOCK_PISTON_RETRACT,blockListener,Priority.Normal,this);
-		*/
 		pm.registerEvents(blockListener,this);
-		
-		/* OLD!
-		pm.registerEvent(Event.Type.PLAYER_MOVE,playerListener,Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_INTERACT,playerListener,Priority.High,this);
-		*/
 		pm.registerEvents(playerListener,this);
-		
-		/* OLD
-		pm.registerEvent(Event.Type.ENTITY_EXPLODE,entityListener,Priority.High,this);
-		pm.registerEvent(Event.Type.WORLD_LOAD,worldListener,Priority.Normal,this);
-		*/
 		pm.registerEvents(worldListener,this);
 		pm.registerEvents(entityListener,this);
+		
 		this.out("Enabled ("+gateNumber+" gates)");
 	}
 	
@@ -195,7 +179,7 @@ public class KG extends JavaPlugin {
 			else if (args[0].equalsIgnoreCase("reload")){
 				validCommand = true;
 				if (permit(player,"konseptgate.command.reload")){
-					loadConfig(true);
+					loadConfig();
 					int gatesLoaded = gates.load();
 					player.sendMessage(ChatColor.GOLD+"KonseptGate reloaded!");
 					player.sendMessage(ChatColor.GOLD+"   "+gatesLoaded+" gates found.");
@@ -297,99 +281,45 @@ public class KG extends JavaPlugin {
 		return player.hasPermission(permission);
 	}
 	public void out(String message) {
-		PluginDescriptionFile pdfFile = this.getDescription();
-		log.info("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + "] " + message);
+		log.info("[" +pluginName+ " " + pluginVersion + "] " + message);
 	}
-	public void crap(String message){
-		PluginDescriptionFile pdfFile = this.getDescription();
-		log.severe("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + "] " + message);
+	public void problem(String message){
+		log.severe("[" +pluginName+ " " + pluginVersion + "] " + message);
 	}
-	public void babble(String message){
-		if (!this.verbose){ return; }
-		PluginDescriptionFile pdfFile = this.getDescription();
-		log.info("[" + pdfFile.getName()+ " " + pdfFile.getVersion() + " VERBOSE] " + message);
+	public void verbose(String message){
+		if (!this.verbose) return; 
+		log.info("[" +pluginName+ " " + pluginVersion + " VERBOSE] " + message);
 	}
-	public void loadConfig(boolean forceReload) {
-		File configFile = new File(getDataFolder(),"config.yml");
-		File oldFile = new File(getDataFolder(),"settings.yml");
-		FileConfiguration config = getConfig();
-		
-		if (forceReload){
-			try {
-				config.load(configFile);
-			} catch (FileNotFoundException e) {
-				crap("Forced reload of "+configFile.getAbsolutePath()+" FAILED:  File not found!");
-			} catch (IOException e) {
-				crap("Forced reload of "+configFile.getAbsolutePath()+" FAILED:  "+e.getMessage());
-			} catch (InvalidConfigurationException e) {
-				crap("Forced reload of "+configFile.getAbsolutePath()+" FAILED:  Invalid YAML!");
-			}
-		}
-		
-		if (oldFile.exists()){
-			try {
-				config.load(oldFile);
-				
-				if (oldFile.delete()){
-					out("Old configuration file found, read and deleted.  New filename is "+configFile.getAbsolutePath());
-				}
-				else {
-					crap("Old configuration file found and read BUT COULD NOT BE DELETED!  Suggest manual deletion of "+configFile.getAbsolutePath());
-				}
-				
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				crap("Okay, something REALLY odd happened.  A file I know to exist just suddenly went away: "+oldFile.getAbsolutePath());
-			} catch (IOException e) {
-				e.printStackTrace();
-				crap("IOException while reading your old config file ("+oldFile.getAbsolutePath()+")");
-			} catch (InvalidConfigurationException e) {
-				e.printStackTrace();
-				crap("Old config file ("+oldFile.getAbsolutePath()+") has broken YAML in it.");
-			}
-		}
-
-		
-		this.verbose = config.getBoolean("verbose", false);
-		babble("Verbose mode ON!");
-		
-		this.defaultTarget = config.getString("defaultTarget","");
-		if (defaultTarget.isEmpty()){
-			babble("No default target gate (which is fine, really!)");
-		}
-		else {
-			babble("Default target gate is "+defaultTarget);
-		}
-		
-		this.fireEffect = config.getBoolean("fireEffect", true);
-		if (fireEffect){
-			babble("Fire effect is enabled");
-		}
-		else {
-			babble("Fire effect is disabled");
-		}
-		
-		int underblockID = config.getInt("underblockID",89);  // ID 89 is Glowstone
-		Material useUnderblock = Material.getMaterial(underblockID);
-		if (useUnderblock == null){
-			crap("Invalid underblockID in config, using STONE");
-			this.underblock = Material.STONE;
-		}
-		else {
-			this.underblock = useUnderblock;
-		}
-		babble("Underblock is "+underblock.toString());
-		
-		
-		if (!configFile.exists()){
-			this.out("Configuration file does not exist.  Creating "+configFile.getAbsolutePath());
-			try {
-				config.save(configFile);
-			} catch (IOException e) {
-				e.printStackTrace();
-				crap("Failed saving configuration file!  OSHIT!!!");
-			}
-		}
+	private void loadConfig(){
+	    this.verbose = getConfig().getBoolean("verbose",false);
+	    verbose("Verbose mode!  Spammy as hell!");
+	    
+	    this.fireEffect = getConfig().getBoolean("fireEffect", true);
+	    if (fireEffect){
+	        verbose("fireEffect is ON!");
+	    }
+	    else {
+	        verbose("fireEffect is OFF!");
+	    }
+	    int underblockID = getConfig().getInt("underblockID",89);
+	    
+        Material useUnderblock = Material.getMaterial(underblockID);
+        if (useUnderblock == null){
+            problem("Invalid underblockID in config, using STONE");
+            this.underblock = Material.STONE;
+        }
+        else {
+            this.underblock = useUnderblock;
+            verbose("underblockID("+underblockID+") is "+underblock.toString());
+        }
+        
+        this.defaultTarget = getConfig().getString("defaultTarget","");
+        if (defaultTarget.isEmpty()){
+            verbose("No default target gate (which is fine, really!)");
+        }
+        else {
+            verbose("Default target gate is "+defaultTarget);
+        }
 	}
 	public String plural(int number) {
 		if (number == 1){

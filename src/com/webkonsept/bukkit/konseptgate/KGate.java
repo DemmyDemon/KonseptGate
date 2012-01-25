@@ -93,7 +93,7 @@ public class KGate {
 				this.location = KGate.saneLocation(new Location(world,x,y,z));
 			}
 			else {
-				plugin.babble("World '"+worldName+"' is not loaded yet:  Deferring location resolution for KonseptGate "+name);
+				plugin.verbose("World '"+worldName+"' is not loaded yet:  Deferring location resolution for KonseptGate "+name);
 				deferredLocation = worldName+split+x+split+y+split+z;
 				plugin.gates.gateWorldNotLoaded++;
 			}
@@ -161,16 +161,16 @@ public class KGate {
 			
 			World world = Bukkit.getServer().getWorld(worldName);
 			if (world != null){
-				plugin.babble("World '"+worldName+"' wasn't here before, but it is now!  KonseptGate "+name+" should be fine.");
+				plugin.verbose("World '"+worldName+"' wasn't here before, but it is now!  KonseptGate "+name+" should be fine.");
 				this.location = KGate.saneLocation(new Location(world,x,y,z));
 				this.plugin.gates.gateLocation.put(this.location,this);
 				this.plugin.gates.gateName.put(this.name,this);
 				createBlock(plugin.underblock);
 				this.plugin.gates.gateWorldNotLoaded--;
-				plugin.babble(this.plugin.gates.gateWorldNotLoaded+" gates left woth no world to call their own.");
+				plugin.verbose(this.plugin.gates.gateWorldNotLoaded+" gates left woth no world to call their own.");
 			}
 			else {
-				plugin.babble("World '"+worldName+"' is not loaded yet, and KonseptGate '"+name+"' is in it!");
+				plugin.verbose("World '"+worldName+"' is not loaded yet, and KonseptGate '"+name+"' is in it!");
 			}
 		}
 		

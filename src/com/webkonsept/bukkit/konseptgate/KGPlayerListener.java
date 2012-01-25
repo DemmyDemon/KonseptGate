@@ -31,7 +31,7 @@ public class KGPlayerListener implements Listener {
 		Player player = event.getPlayer();
 		if (event.getAction().equals(Action.PHYSICAL) && event.getClickedBlock().getType().equals(Material.STONE_PLATE)){
 			if (inTransit.containsKey(player) && inTransit.get(player) > System.currentTimeMillis()){
-				plugin.babble("Still in transit from the last TP, won't TP again.");
+				plugin.verbose("Still in transit from the last TP, won't TP again.");
 			}
 			else {
 				Location saneOriginLocation = KGate.saneLocation(event.getClickedBlock().getLocation());
@@ -43,13 +43,13 @@ public class KGPlayerListener implements Listener {
 							
 							Location destination = destinationGate.getLocationForTeleport();
 							if (destination != null){
-								plugin.babble("Teleporting "+player.getName()+" to "+origin.getTargetName());
+								plugin.verbose("Teleporting "+player.getName()+" to "+origin.getTargetName());
 								BukkitScheduler scheduler = plugin.getServer().getScheduler();
 								inTransit.put(player,System.currentTimeMillis()+2000);
 								scheduler.scheduleSyncDelayedTask(plugin, new KGPlayerTeleport(event.getPlayer(),destination,frozen,plugin.fireEffect),1);
 							}
 							else {
-								plugin.babble("Target world isn't loaded yet!");
+								plugin.verbose("Target world isn't loaded yet!");
 								player.sendMessage(ChatColor.RED+"Sorry, the target world is not loaded yet!");
 							}
 						}
