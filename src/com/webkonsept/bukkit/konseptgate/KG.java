@@ -141,17 +141,42 @@ public class KG extends JavaPlugin {
 			}
 			else if (args[0].equalsIgnoreCase("list")){
 				validCommand = true;
-				if (permit(player,"konseptgate.command.list")){				
+				if (permit(player,"konseptgate.command.list")){		
 					String lookFor = null;
 					int gateNum = gates.gates.size();
-					if (args.length >= 2){
-						lookFor = args[1];
-						player.sendMessage(gateNum+" gate"+plural(gateNum)+", looking for gates matching "+lookFor);
+					int page = 0;
+					
+					if (args.length == 2){
+
+					    // This try/catch pair gets on my nerves, but I must abandon my Perl ways and be one with the Java.
+					    // ...or go completely insane, which is pretty much the same thing.
+					    // TODO:  Murder whomever came up with this as being "better" than string matching.
+					    try {
+	                        page = Integer.parseInt(args[1]);
+	                    }
+	                    catch (NumberFormatException e){
+	                        lookFor = args[1];
+	                    }
+	                    if (page < 0) page = 0;
+						
+	                    if (page == 0){
+	                        player.sendMessage(ChatColor.GOLD+""+gateNum+" gate"+plural(gateNum)+", looking for gates matching "+lookFor);
+	                    }
+	                    else {
+	                        int gatePages = gateNum + ( gateNum % gatesPerPage);
+	                        int pages = (gatePages/gatesPerPage);
+	                        player.sendMessage(ChatColor.GOLD+""+gateNum+" gate"+plural(gateNum)+", page "+page+" of "+pages);
+	                    }
+					}
+					else if (args.length > 2){
+					    player.sendMessage(ChatColor.RED+"You can't both search and paginate, sorry.");
+					    return true;
 					}
 					else {
-						player.sendMessage(gateNum+" gate"+plural(gateNum));
+						player.sendMessage(ChatColor.GOLD+""+gateNum+" gate"+plural(gateNum));
 					}
 					ArrayList<String> gateList = new ArrayList<String>();
+					
 					for (KGate gate : gates.gates){
 						if (lookFor != null && gate.getName().contains(lookFor)){
 							gateList.add(gate.getName().replace(lookFor,ChatColor.RED+lookFor+ChatColor.WHITE)+" -> "+gate.getTargetName());
@@ -160,11 +185,25 @@ public class KG extends JavaPlugin {
 							gateList.add(gate.getName()+" -> "+gate.getTargetName().replace(lookFor,ChatColor.RED+lookFor+ChatColor.WHITE));
 						}
 						else if (lookFor == null){
-							gateList.add(gate.getName()+" -> "+gate.getTargetName());
+						    //RAAAGE!!!  The Minecraft font isn't monospace, so we can't have nice things.
+						    gateList.add(String.format("%s -> %s", gate.getName(),gate.getTargetName()));
 						}
 					}
 					Object[] sorted = gateList.toArray();
 					Arrays.sort(sorted);
+
+					if (page > 0){
+					    int begin = (gatesPerPage*page)-gatesPerPage;
+					    int end = begin+gatesPerPage;
+					    if (sorted.length < begin+1){
+					        player.sendMessage(ChatColor.RED+"There is no page "+page+"!");
+					        return true;
+					    }
+					    if (end+1 > sorted.length){
+					        end = sorted.length-1;
+					    }
+					    sorted = Arrays.copyOfRange(sorted,begin,end);
+					}
 					
 					for (Object gate : sorted ){
 						if (gate instanceof String){
@@ -181,8 +220,10 @@ public class KG extends JavaPlugin {
 				if (permit(player,"konseptgate.command.reload")){
 					loadConfig();
 					int gatesLoaded = gates.load();
+					int pages = (gatesLoaded + ( gatesLoaded % gatesPerPage) ) / gatesPerPage;
 					player.sendMessage(ChatColor.GOLD+"KonseptGate reloaded!");
 					player.sendMessage(ChatColor.GOLD+"   "+gatesLoaded+" gates found.");
+					player.sendMessage(ChatColor.GOLD+"   Listing "+gatesPerPage+" gates per page ("+pages+" pages)");
 					
 					player.sendMessage(ChatColor.GOLD+"   Underblock is "+underblock.toString());
 					if (defaultTarget.length() > 0){
@@ -291,6 +332,8 @@ public class KG extends JavaPlugin {
 		log.info("[" +pluginName+ " " + pluginVersion + " VERBOSE] " + message);
 	}
 	private void loadConfig(){
+	    reloadConfig();
+	    getConfig().options().copyDefaults(true);
 	    this.verbose = getConfig().getBoolean("verbose",false);
 	    verbose("Verbose mode!  Spammy as hell!");
 	    
@@ -301,7 +344,7 @@ public class KG extends JavaPlugin {
 	    else {
 	        verbose("fireEffect is OFF!");
 	    }
-	    int underblockID = getConfig().getInt("underblockID",89);
+	    int underblockID = getConfig().getInt("underblockID",42);
 	    
         Material useUnderblock = Material.getMaterial(underblockID);
         if (useUnderblock == null){
@@ -313,6 +356,9 @@ public class KG extends JavaPlugin {
             verbose("underblockID("+underblockID+") is "+underblock.toString());
         }
         
+        this.gatesPerPage = getConfig().getInt("gatesPerPage",9);
+        verbose("Listing "+gatesPerPage+" gates per page");
+        
         this.defaultTarget = getConfig().getString("defaultTarget","");
         if (defaultTarget.isEmpty()){
             verbose("No default target gate (which is fine, really!)");
@@ -320,6 +366,7 @@ public class KG extends JavaPlugin {
         else {
             verbose("Default target gate is "+defaultTarget);
         }
+        saveConfig();
 	}
 	public String plural(int number) {
 		if (number == 1){

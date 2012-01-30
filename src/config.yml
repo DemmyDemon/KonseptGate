@@ -1,4 +1,5 @@
 verbose: false
-underblockID: 89
+underblockID: 42
 defaultTarget: ''
 fireEffect: true
+gatesPerPage: 9
