@@ -22,7 +22,7 @@ optional: []
 engines:
     craftbukkit:
         min: 1818
-        max: 1818
+        max: 1846
 permissions:
     konseptgate.*:
         description: Gives full access
