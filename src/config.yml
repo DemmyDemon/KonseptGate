@@ -2,4 +2,5 @@ verbose: false
 underblockID: 42
 defaultTarget: ''
 fireEffect: true
+missingDestinationMessage: true
 gatesPerPage: 9

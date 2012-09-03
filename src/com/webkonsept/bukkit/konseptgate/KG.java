@@ -33,6 +33,7 @@ public class KG extends JavaPlugin {
 	protected boolean verbose = true;
 	protected Material underblock = Material.NETHER_BRICK;
 	protected String defaultTarget = "";
+    protected boolean missingDestinationMessage = true;
 	
 	@Override
 	public void onDisable() {
@@ -259,7 +260,7 @@ public class KG extends JavaPlugin {
 					if (gates.gateName.containsKey(gateName)){
 						Location destination = gates.gateName.get(gateName).getLocationForTeleport();
 						getServer().getScheduler().scheduleAsyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),20);
-						getServer().getScheduler().scheduleSyncDelayedTask(this, new KGPlayerTeleport(player,destination,playerListener.frozen,this.fireEffect),1);
+						getServer().getScheduler().scheduleSyncDelayedTask(this, new KGPlayerTeleport(player,null,destination,playerListener.frozen,this.fireEffect),1);
 						player.teleport(destination);
 					}
 					else {
@@ -365,6 +366,14 @@ public class KG extends JavaPlugin {
         }
         else {
             verbose("Default target gate is "+defaultTarget);
+        }
+        
+        this.missingDestinationMessage = getConfig().getBoolean("missingDestinationMessage",true);
+        if (missingDestinationMessage){
+            verbose("Missing destination message is ON");
+        }
+        else {
+            verbose("Missing destination message is OFF");
         }
         saveConfig();
 	}

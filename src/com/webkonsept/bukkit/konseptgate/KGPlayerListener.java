@@ -40,20 +40,20 @@ public class KGPlayerListener implements Listener {
 						KGate origin = plugin.gates.gateLocation.get(saneOriginLocation);
 						if (plugin.gates.gateName.containsKey(origin.getTargetName())){
 							KGate destinationGate = plugin.gates.gateName.get(origin.getTargetName());
-							
 							Location destination = destinationGate.getLocationForTeleport();
 							if (destination != null){
 								plugin.verbose("Teleporting "+player.getName()+" to "+origin.getTargetName());
 								BukkitScheduler scheduler = plugin.getServer().getScheduler();
 								inTransit.put(player,System.currentTimeMillis()+2000);
-								scheduler.scheduleSyncDelayedTask(plugin, new KGPlayerTeleport(event.getPlayer(),destination,frozen,plugin.fireEffect),1);
+								scheduler.scheduleSyncDelayedTask(plugin, new KGPlayerTeleport(event.getPlayer(),event.getClickedBlock(),destination,frozen,plugin.fireEffect),1);
+                                event.setCancelled(true);
 							}
 							else {
 								plugin.verbose("Target world isn't loaded yet!");
 								player.sendMessage(ChatColor.RED+"Sorry, the target world is not loaded yet!");
 							}
 						}
-						else if (origin.getTargetName().equals("")){
+						else if (origin.getTargetName().equals("") && plugin.missingDestinationMessage){
 							player.sendMessage("No destination is set for this gate");
 						}
 						else{
