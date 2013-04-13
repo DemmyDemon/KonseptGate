@@ -1,14 +1,14 @@
 package com.webkonsept.bukkit.konseptgate;
 
-import java.text.ParseException;
-import java.util.HashSet;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+
+import java.text.ParseException;
+import java.util.HashSet;
 
 public class KGate {
 	private KG plugin;
@@ -19,7 +19,8 @@ public class KGate {
 	private int yaw;
 	
 	private String split = ",";
-	private int expectedNumberOfFields = 7;
+	private int expectedNumberOfFields = 8;
+    private String command = "";
 	
 	private static HashSet<Material> nonHinderingBlocks = new HashSet<Material>(){
 		private static final long serialVersionUID = 12345L;  // Just to squash the damn warning :-P
@@ -67,9 +68,9 @@ public class KGate {
 		if (gateString == null){
 			throw new ParseException("gateString is null.  Very bad.",0);
 		}
-		String[] gateSpec = gateString.split(split);
-		
-		if (gateSpec.length != expectedNumberOfFields && gateSpec.length != expectedNumberOfFields - 1){
+		String[] gateSpec = gateString.split(split,expectedNumberOfFields);
+
+		if (gateSpec.length != expectedNumberOfFields && gateSpec.length != expectedNumberOfFields - 1){ // -1 because people might be upgrading.
 			throw new ParseException("Invalid number of fields in gateString("+gateString+"):  Found "+gateSpec.length+", expected "+expectedNumberOfFields,0);
 		}
 		
@@ -80,13 +81,15 @@ public class KGate {
 			int y 				= Integer.parseInt(gateSpec[3]);
 			int z 				= Integer.parseInt(gateSpec[4]);
 			int yaw 			= Integer.parseInt(gateSpec[5]);
-			String target 		= "";
+			String target 		= gateSpec[6];
+            String command      = "";
 			if (gateSpec.length == expectedNumberOfFields){
-				target = gateSpec[6];
+                command = gateSpec[7];
 			}
-			
+
 			this.name = name;
 			this.targetName = target;
+            this.command = command;
 			World world = Bukkit.getServer().getWorld(worldName);
 			this.yaw = yaw;
 			if (world != null){
@@ -97,18 +100,20 @@ public class KGate {
 				deferredLocation = worldName+split+x+split+y+split+z;
 				plugin.gates.gateWorldNotLoaded++;
 			}
+
 			
 		}
 		catch (NumberFormatException e){
 			throw new ParseException("Invalid integer found in gateString "+gateString,0);
 		}
 	}
-	KGate (KG instance,String name, Location location, String targetName){
+	KGate (KG instance,String name, Location location, String targetName, String command){
 		this.plugin = instance;
 		this.name = name.replace(split,"");
 		this.targetName = targetName.replace(split,"");
 		this.yaw = cardinalYaw(location.getYaw());
 		this.location = saneLocation(location);
+        this.command = command;
 	}
 	KGate (KG instance,String name, Location location){
 		this.plugin = instance;
@@ -187,10 +192,10 @@ public class KGate {
 	public BlockFace faceFromYaw(int yaw){
 		int cYaw = cardinalYaw(yaw);
 		switch (cYaw){
-			case 	0: 		return BlockFace.WEST; 
-			case 	90: 	return BlockFace.NORTH; 
-			case 	180: 	return BlockFace.EAST; 
-			case 	270: 	return BlockFace.SOUTH; 
+			case 	0: 		return BlockFace.SOUTH;
+			case 	90: 	return BlockFace.WEST;
+			case 	180: 	return BlockFace.NORTH;
+			case 	270: 	return BlockFace.EAST;
 			default : 		return BlockFace.SOUTH; 
 		}
 	}
@@ -198,6 +203,12 @@ public class KGate {
 		targetName.replaceAll(split,"");
 		this.targetName = targetName;
 	}
+    public void setCommand(String command) {
+        this.command = command;
+    }
+    public String getCommand(){
+        return this.command;
+    }
 	public String getTargetName() {
 		return targetName;
 	}
@@ -234,10 +245,10 @@ public class KGate {
 			int x = (int)location.getBlockX();
 			int y = (int)location.getBlockY();
 			int z = (int)location.getBlockZ();
-			return name+split+worldName+split+x+split+y+split+z+split+yaw+split+targetName;
+			return name+split+worldName+split+x+split+y+split+z+split+yaw+split+targetName+split+command;
 		}
 		else {
-			return name+split+deferredLocation+split+yaw+split+targetName;
+			return name+split+deferredLocation+split+yaw+split+targetName+split+command;
 		}
 	}
 	public void setYaw(float newYaw) {

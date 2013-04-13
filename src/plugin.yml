@@ -1,17 +1,16 @@
 name: KonseptGate
 main: com.webkonsept.bukkit.konseptgate.KG
-version: 0.5.3
-branch: stable
+version: 0.6beta4
+branch: beta
 website: http://minecraft.webkonsept.com/plugins/details/KonseptGate.html
 location: http://minecraft.webkonsept.com/plugins/download/KonseptGate.jar
 thread: http://forums.bukkit.org/threads/KonseptGate.25907/
 database: false
 description: Simplified/stripped-down teleport/gating plugin
 commands:
-    kg: 
+    kg:
         description: Takes the selected action against the indicated gate(s)
-        usage: /kg [create|move|delete|link|jump|ignore|reload|list] <gate(s)>
-generators: [bukget]
+        usage: /kg [create|command|move|delete|link|jump|ignore|reload|list] <gate(s)> <options>
 categories: [TP]
 maintainer: DemmyDemon
 authors: [DemmyDemon]
@@ -19,10 +18,6 @@ conflicts: []
 required: []
 optional: []
 softdepend: [MultiVerse,Multiverse-Core,MyWorlds,emericaWorlds,WormholeExtreme,WorldGuard]
-engines:
-    craftbukkit:
-        min: 1818
-        max: 1846
 permissions:
     konseptgate.*:
         description: Gives full access
@@ -41,6 +36,7 @@ permissions:
             konseptgate.command.reload: true
             konseptgate.command.jump: true
             konseptgate.command.ignore: true
+            konseptgate.command.command: true
     konseptgate.command.link:
         description: Gives access to the /kg link command
         default: op
@@ -64,6 +60,9 @@ permissions:
         default: op
     konseptgate.command.ignore:
         description: Gives access to the /kg ignore command
+        default: op
+    konseptgate.command.command:
+        description: Gives access to the /kg command command
         default: op
     konseptgate.teleport:
         description: The business end of this plugin
