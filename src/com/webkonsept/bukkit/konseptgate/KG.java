@@ -94,7 +94,7 @@ public class KG extends JavaPlugin {
                         sender.sendMessage("A gate named '"+gateName+"' already exists.  Did you mean /kg move "+gateName+"?");
                         return true;
                     }
-                    getServer().getScheduler().scheduleAsyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),10);
+                    getServer().getScheduler().scheduleSyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),10);
                     Location newLocation = player.getLocation().clone();
 
                     if (args.length == 2){
