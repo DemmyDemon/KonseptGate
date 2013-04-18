@@ -38,6 +38,14 @@ public class KGPlayerListener implements Listener {
                 if (plugin.gates.gateLocation.containsKey(saneOriginLocation)){
                     if (plugin.permit(player, "konseptgate.teleport")){
                         KGate origin = plugin.gates.gateLocation.get(saneOriginLocation);
+                        
+                        if(origin.getPermission()) {
+                        	if(!plugin.permit(player, "konseptgate.gate."+origin.getName())) {
+                        		player.sendMessage(ChatColor.RED+"Sorry, you don't have permission for that gate!");
+                        		return;
+                        	}
+                        }
+                        
                         if (plugin.gates.gateName.containsKey(origin.getTargetName())){
                             KGate destinationGate = plugin.gates.gateName.get(origin.getTargetName());
                             Location destination = destinationGate.getLocationForTeleport();

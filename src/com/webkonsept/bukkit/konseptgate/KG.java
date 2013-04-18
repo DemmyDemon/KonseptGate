@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -68,6 +69,13 @@ public class KG extends JavaPlugin {
         pm.registerEvents(entityListener,this);
 
         this.out("Enabled ("+gateNumber+" gates)");
+    }
+    
+    public void registerPermission(String gateName) {
+    	this.getServer().getPluginManager().addPermission(new Permission("konseptgate.gate."+gateName));
+    }
+    public void unRegisterPermission(String gateName) {
+    	this.getServer().getPluginManager().removePermission(new Permission("konseptgate.gate."+gateName));
     }
 
     public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
@@ -378,6 +386,30 @@ public class KG extends JavaPlugin {
                         sender.sendMessage("Can't link "+gateFrom+" to "+gateTo+" bacause origin gate does not exist!");
                     }
                 }
+                else {
+                    player.sendMessage(ChatColor.RED+"Permission denied!");
+                }
+            }
+            else if(args[0].equalsIgnoreCase("togglepermission") || args[0].equalsIgnoreCase("toggleperm")) {
+            	if(args.length < 2) {
+                    sender.sendMessage("You forgot the name of the gate!");
+                    return false;
+            	}
+            	String gateName = args[1];
+            	if(permit(player,"konseptgate.command.toggleperm")) {
+            		if(gates.gateName.containsKey(gateName)) {
+            			KGate gate = gates.gateName.get(gateName);
+            			gate.togglePerm();
+            			if(gate.getPermission()) 
+            				player.sendMessage(gate.getName()+" now requires permission to use!");
+            			else
+            				player.sendMessage(gate.getName()+" now does not require permission to use!");
+            				
+            		}
+                    else {
+                        player.sendMessage(gateName+"?  No such gate.");
+                    }
+            	}
                 else {
                     player.sendMessage(ChatColor.RED+"Permission denied!");
                 }

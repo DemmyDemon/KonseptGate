@@ -17,9 +17,10 @@ public class KGate {
 	private String targetName;
 	private Location location;
 	private int yaw;
+	private boolean permission;
 	
 	private String split = ",";
-	private int expectedNumberOfFields = 8;
+	private int expectedNumberOfFields = 9;
     private String command = "";
 	
 	private static HashSet<Material> nonHinderingBlocks = new HashSet<Material>(){
@@ -83,8 +84,18 @@ public class KGate {
 			int yaw 			= Integer.parseInt(gateSpec[5]);
 			String target 		= gateSpec[6];
             String command      = "";
-			if (gateSpec.length == expectedNumberOfFields){
+            boolean permission  = false;
+            
+			if (gateSpec.length == expectedNumberOfFields-1){
                 command = gateSpec[7];
+			}
+			if (gateSpec.length == expectedNumberOfFields) {
+				if(gateSpec[8].equalsIgnoreCase("true") || gateSpec[8].equalsIgnoreCase("false")) {
+					permission = Boolean.parseBoolean(gateSpec[8]);
+				}
+				else {
+					throw new ParseException("Invalid boolean found in gateString "+gateString,0);
+				}
 			}
 
 			this.name = name;
@@ -92,6 +103,10 @@ public class KGate {
             this.command = command;
 			World world = Bukkit.getServer().getWorld(worldName);
 			this.yaw = yaw;
+			this.permission = permission;
+			if(permission)
+				plugin.registerPermission(name);
+			
 			if (world != null){
 				this.location = KGate.saneLocation(new Location(world,x,y,z));
 			}
@@ -114,6 +129,7 @@ public class KGate {
 		this.yaw = cardinalYaw(location.getYaw());
 		this.location = saneLocation(location);
         this.command = command;
+        this.permission = false;
 	}
 	KGate (KG instance,String name, Location location){
 		this.plugin = instance;
@@ -121,6 +137,7 @@ public class KGate {
 		this.yaw = cardinalYaw(location.getYaw());
 		this.location = saneLocation(location);
 		this.targetName = "";
+		this.permission = false;
 	}
 	public void createBlock(Material underblock){
 		Location blockLocation = getLocation();
@@ -146,6 +163,8 @@ public class KGate {
 		Block below = block.getRelative(BlockFace.DOWN);
 		below.setType(below.getRelative(BlockFace.NORTH).getType());
 	}
+	
+	
 	public void setName(String name) {
 		name.replaceAll(split,"");
 		this.name = name;
@@ -245,10 +264,10 @@ public class KGate {
 			int x = (int)location.getBlockX();
 			int y = (int)location.getBlockY();
 			int z = (int)location.getBlockZ();
-			return name+split+worldName+split+x+split+y+split+z+split+yaw+split+targetName+split+command;
+			return name+split+worldName+split+x+split+y+split+z+split+yaw+split+targetName+split+command+split+permission;
 		}
 		else {
-			return name+split+deferredLocation+split+yaw+split+targetName+split+command;
+			return name+split+deferredLocation+split+yaw+split+targetName+split+command+split+permission;
 		}
 	}
 	public void setYaw(float newYaw) {
@@ -256,5 +275,22 @@ public class KGate {
 	}
 	public int getYaw() {
 		return yaw;
+	}
+	
+	public boolean getPermission() {
+		return permission;
+	}
+	public void setPermission(boolean permission) {
+		this.permission = permission;
+	}
+	public void togglePerm() {
+		if(this.permission) {
+			this.permission = false;
+			plugin.unRegisterPermission("konseptgate.gate."+this.name);
+		}
+		else {
+			this.permission = true;
+			plugin.registerPermission("konseptgate.gate."+this.name);
+		}
 	}
 }

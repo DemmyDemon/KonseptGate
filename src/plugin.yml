@@ -10,7 +10,7 @@ description: Simplified/stripped-down teleport/gating plugin
 commands:
     kg:
         description: Takes the selected action against the indicated gate(s)
-        usage: /kg [create|command|move|delete|link|jump|ignore|reload|list] <gate(s)> <options>
+        usage: /kg [create|command|move|delete|toggleperm|link| jump|ignore|reload|list] <gate(s)> <options>
 categories: [TP]
 maintainer: DemmyDemon
 authors: [DemmyDemon]
@@ -25,7 +25,7 @@ permissions:
             konseptgate.command.*: true
             konseptgate.teleport: true
             konseptgate.info: true
-    konseptgate.command.*:
+    konseptgate.command*:
         description: Gives access to all commands
         children:
             konseptgate.command.link: true
@@ -37,6 +37,7 @@ permissions:
             konseptgate.command.jump: true
             konseptgate.command.ignore: true
             konseptgate.command.command: true
+            konseptgate.command.toggleperm: true
     konseptgate.command.link:
         description: Gives access to the /kg link command
         default: op
@@ -63,6 +64,9 @@ permissions:
         default: op
     konseptgate.command.command:
         description: Gives access to the /kg command command
+        default: op
+    konseptgate.command.toggleperm:
+        description: Gives access to the /kg togglepermission command
         default: op
     konseptgate.teleport:
         description: The business end of this plugin
