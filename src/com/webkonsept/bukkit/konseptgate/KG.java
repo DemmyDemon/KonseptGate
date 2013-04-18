@@ -254,7 +254,7 @@ public class KG extends JavaPlugin {
                             gateList.add(String.format("%s -> %s (%s)",gate.getName(),gate.getTargetName().replace(lookFor,ChatColor.RED+lookFor+ChatColor.RESET),gateCommand));
                         }
                         else if (lookFor == null){
-                            gateList.add(String.format("%s -> %s (%s)", gate.getName(),gate.getTargetName(),command));
+                            gateList.add(String.format("%s -> %s (%s)", gate.getName(),gate.getTargetName(),"/"+gateCommand));
                         }
                     }
                     Object[] sorted = gateList.toArray();
