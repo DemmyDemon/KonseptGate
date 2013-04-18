@@ -115,6 +115,11 @@ public class KG extends JavaPlugin {
             else if (args[0].equalsIgnoreCase("command")){
                 validCommand = true;
 
+                if (args.length < 2){
+                    sender.sendMessage("You forgot the name of the gate!");
+                    return false;
+                }
+                
                 String gateName = args[1];
                 if (permit(player,"konseptgate.command.command")){
 
@@ -353,6 +358,7 @@ public class KG extends JavaPlugin {
             else if (args[0].equalsIgnoreCase("link")){
                 if (args.length < 3){
                     sender.sendMessage("You need both the origin and destination gate names!");
+                    return false;
                 }
                 String gateFrom = args[1];
                 String gateTo = args[2];
