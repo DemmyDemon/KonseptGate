@@ -94,7 +94,7 @@ public class KG extends JavaPlugin {
                         sender.sendMessage("A gate named '"+gateName+"' already exists.  Did you mean /kg move "+gateName+"?");
                         return true;
                     }
-                    getServer().getScheduler().scheduleSyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),10);
+                    getServer().getScheduler().runTaskLaterAsynchronously(this, new KGPlayerInTransit(player,playerListener.inTransit),10);
                     Location newLocation = player.getLocation().clone();
 
                     if (args.length == 2){
@@ -168,7 +168,7 @@ public class KG extends JavaPlugin {
                 validCommand = true;
                 if (permit(player,"konseptgate.command.move")){
                     if (gates.gateName.containsKey(gateName)){
-                        getServer().getScheduler().scheduleAsyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),10);
+                        getServer().getScheduler().runTaskLaterAsynchronously(this, new KGPlayerInTransit(player,playerListener.inTransit),10);
                         Location newLocation = player.getLocation().clone();
                         gates.move(gateName, newLocation);
                         sender.sendMessage("Gate '"+gateName+"' moved!");
@@ -324,7 +324,7 @@ public class KG extends JavaPlugin {
                 if (permit(player,"konseptgate.command.jump")){
                     if (gates.gateName.containsKey(gateName)){
                         Location destination = gates.gateName.get(gateName).getLocationForTeleport();
-                        getServer().getScheduler().scheduleAsyncDelayedTask(this, new KGPlayerInTransit(player,playerListener.inTransit),20);
+                        getServer().getScheduler().runTaskLaterAsynchronously(this, new KGPlayerInTransit(player,playerListener.inTransit),20);
                         getServer().getScheduler().scheduleSyncDelayedTask(this, new KGPlayerTeleport(player,null,destination,playerListener.frozen,this.fireEffect),1);
                         player.teleport(destination);
                     }
